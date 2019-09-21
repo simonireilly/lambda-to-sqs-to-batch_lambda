@@ -1,0 +1,10 @@
+{
+  "name": "simple-queue",
+  "version": "1.0.0",
+  "scripts": {
+    "serverless": "serverless"
+  },
+  "dependencies": {
+    "serverless": "^1.52.2"
+  }
+}

@@ -1,0 +1,45 @@
+service: simple-queue
+
+custom:
+  queue-name: simple-queue
+  aws-account-id: 452824830715
+
+provider:
+  name: aws
+  region: eu-west-1
+  runtime: nodejs10.x
+  environment:
+    QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/${self:custom.aws-account-id}/${self:custom.queue-name}
+    REGION: ${self:provider.region}
+
+functions:
+  
+  push:
+    handler: handler.push
+    events:
+      - http:
+          path: events/push
+          method: post
+    iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+      Resource: arn:aws:sqs:*:*:${self:custom.queue-name}
+  
+  process:
+    handler: handler.process
+    events:
+      - sqs: arn:aws:sqs:${self:provider.region}:${self:custom.aws-account-id}:${self:custom.queue-name}
+        batchSize: 10
+    iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:ReceiveMessage
+      Resource: arn:aws:sqs:*:*:${self:custom.queue-name}
+
+resources:
+  Resources:
+    MyQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: ${self:custom.queue-name}
